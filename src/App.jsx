@@ -104,14 +104,14 @@ const translations = {
       presets: {
         title: 'Швидкі пакети для постійних клієнтів',
         custom: 'Інша сума',
-        tuitionHour: '1 година занять (400 грн / ≈ $10)',
         tuitionWeekly: 'Стандартний пакет занять (2 000 грн / ≈ $50)',
         translationBase: 'Переклад 1 000 слів (4 000 грн / ≈ $90)',
         customMonthly: 'Місячний пакет (11 000 грн / ≈ $250)',
         tuitionTitle: 'Послуги викладання',
         translationTitle: 'Послуги перекладу',
         specifyWords: 'Вказати великий обсяг слів:',
-        wordsDropdownPlaceholder: 'Оберіть обсяг слів'
+        wordsDropdownPlaceholder: 'Оберіть обсяг слів',
+        tuitionHoursPlaceholder: 'Оберіть год. занять'
       }
     },
     footer: {
@@ -211,14 +211,14 @@ const translations = {
       presets: {
         title: 'Quick Presets for Regular Clients',
         custom: 'Custom Amount',
-        tuitionHour: '1 Hour Tuition (400 UAH / ≈ $10)',
         tuitionWeekly: 'Standard Tuition Package (2,000 UAH / ≈ $50)',
         translationBase: '1,000 Words Translation (4,000 UAH / ≈ $90)',
         customMonthly: 'Monthly Package (11,000 UAH / ≈ $250)',
         tuitionTitle: 'Tuition Services',
         translationTitle: 'Translation Services',
         specifyWords: 'Specify larger word count:',
-        wordsDropdownPlaceholder: 'Choose volume'
+        wordsDropdownPlaceholder: 'Choose volume',
+        tuitionHoursPlaceholder: 'Choose hours'
       }
     },
     footer: {
@@ -306,6 +306,7 @@ export default function App() {
 
   const currentTotal = getCalculatedTotal();
 
+  // Production-grade connection handler to call backend endpoints
   const handlePaymentSubmit = async () => {
     setIsSubmitting(true);
     setPaymentError('');
@@ -364,7 +365,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FBFBFE] text-slate-800 antialiased flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white">
       
-      {/* HEADER SECTION */}
+      {/* HEADER SECTION - Flexbox layout without absolute positioning to avoid iframe overlap bugs */}
       <header className="bg-white border-b border-slate-200/85">
         <div className="max-w-6xl mx-auto px-4">
           
@@ -783,7 +784,6 @@ export default function App() {
                 </div>
               </div>
 
-              {}
               {/* Quick Amount Selector Segment for Returning Clients */}
               <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 mb-8">
                 <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">
@@ -796,17 +796,44 @@ export default function App() {
                     {t.payment.presets.tuitionTitle}
                   </h5>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => handlePresetSelect(400, 'tuition', 'tuition-1hr')}
-                      className={`text-left p-3 rounded-xl border text-xs font-bold transition-all duration-200 ${
-                        activePreset === 'tuition-1hr'
-                          ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-700'
-                      }`}
-                    >
-                      {t.payment.presets.tuitionHour}
-                    </button>
+                    
+                    {/* Dynamic Selection Dropdown replaces static button */}
+                    <div className="relative">
+                      <select
+                        value={activePreset.startsWith('tuition-hours-') ? activePreset.replace('tuition-hours-', '') : ""}
+                        onChange={(e) => {
+                          const hours = parseInt(e.target.value);
+                          if (hours > 0) {
+                            handlePresetSelect(hours * 400, 'tuition', `tuition-hours-${hours}`);
+                          }
+                        }}
+                        className={`w-full text-left p-3 pr-8 rounded-xl border text-xs font-bold transition-all duration-200 cursor-pointer appearance-none outline-none ${
+                          activePreset.startsWith('tuition-hours-')
+                            ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
+                            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-700'
+                        }`}
+                      >
+                        <option value="" disabled className="bg-white text-slate-700">
+                          {t.payment.presets.tuitionHoursPlaceholder}
+                        </option>
+                        {[...Array(10).keys()].map((i) => {
+                          const hrs = i + 1;
+                          const uah = hrs * 400;
+                          const usd = hrs * 10;
+                          return (
+                            <option key={hrs} value={hrs} className="bg-white text-slate-700">
+                              {currentLang === 'uk'
+                                ? `${hrs} ${hrs === 1 ? 'година' : hrs < 5 ? 'години' : 'годин'} занять (${uah} грн / ≈ $${usd})`
+                                : `${hrs} ${hrs === 1 ? 'Hour' : 'Hours'} Tuition (${uah} UAH / ≈ $${usd})`}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400">
+                        <span className="text-[10px]">▼</span>
+                      </div>
+                    </div>
+
                     <button
                       type="button"
                       onClick={() => handlePresetSelect(2000, 'tuition', 'tuition-weekly')}
@@ -818,6 +845,7 @@ export default function App() {
                     >
                       {t.payment.presets.tuitionWeekly}
                     </button>
+                    
                     <button
                       type="button"
                       onClick={() => handlePresetSelect(11000, 'tuition', 'custom-monthly')}
@@ -852,7 +880,7 @@ export default function App() {
                       <span>{t.payment.presets.translationBase}</span>
                     </button>
 
-                    {/* Larger Word Count Specification Dropdown (Rogue input box completely removed) */}
+                    {/* Larger Word Count Specification Dropdown */}
                     <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-1.5">
                       <span className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide">
                         {t.payment.presets.specifyWords}
@@ -903,7 +931,6 @@ export default function App() {
                 {t.payment.desc}
               </p>
 
-              {}
               <div className="space-y-4">
                 
                 {/* Service Picker */}
@@ -1023,7 +1050,6 @@ export default function App() {
 
       </main>
 
-      {}
       {/* FOOTER AREA */}
       <footer className="bg-slate-900 text-white pt-16 pb-8 border-t border-slate-850 mt-auto">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -1,60 +1,65 @@
 import crypto from 'crypto';
 
 export default async function handler(req, res) {
-  // Allow only secure POST requests to sign parameters
+  // CORS & Method Guard
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { amount, currency, description, clientPhone, clientEmail } = req.body;
+    // 1. Safe Body Parser Guard (prevents destructuring crashes if body is missing)
+    const body = req.body || {};
+    const { amount, currency, description, clientPhone, clientEmail } = body;
 
-    // Pull Sandbox or Production keys dynamically from Vercel's environment variables
+    // 2. Validate payment amount to prevent unhandled serialization crashes
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({ error: 'Invalid or missing payment amount' });
+    }
+
+    // 3. Load secure API keys from Vercel dashboard
     const publicKey = process.env.LIQPAY_PUBLIC_KEY;
     const privateKey = process.env.LIQPAY_PRIVATE_KEY;
 
+    // Guard: If keys are missing, return a clean JSON error instead of crashing the process
     if (!publicKey || !privateKey) {
-      throw new Error('LiqPay environment keys are missing on Vercel.');
+      console.error('CRITICAL: LiqPay Public or Private keys are not set up in Vercel environment variables.');
+      return res.status(500).json({
+        error: 'Payment Gateway Error: Merchant credentials are missing in the Vercel Settings panel.'
+      });
     }
 
-    // Generate a unique order tracking ID for each click
+    // 4. Generate a unique order tracking ID
     const orderId = `SLS-${Date.now()}`;
 
-    // Create the mandatory JSON schema expected by the LiqPay API
+    // 5. Define required checkout arguments
     const jsonParams = {
       public_key: publicKey,
       version: 3,
       action: 'pay',
-      amount: parseFloat(amount),
-      currency: currency || 'UAH', // Captures UAH, USD, or GBP dynamically from front-end
+      amount: parsedAmount,
+      currency: currency || 'UAH', // Defaults safely to UAH
       description: description || 'Language Services Payment',
       order_id: orderId,
-      result_url: 'https://sheridanls.com.ua/', // Redirect destination after successful checkout
+      result_url: 'https://sheridanls.com.ua/', // Safe return domain
     };
 
-    // Step 1: Base64 encode the stringified JSON parameters payload
+    // 6. Base64 encode the JSON payload string
     const jsonString = JSON.stringify(jsonParams);
     const data = Buffer.from(jsonString).toString('base64');
 
-    // Step 2: Use HMAC-like sequence string parsing to generate SHA1 hash
+    // 7. Create the cryptographic digital signature verification string
     const signString = privateKey + data + privateKey;
     const signature = crypto
       .createHash('sha1')
       .update(signString)
       .digest('base64');
 
-    // Safely transmit signed payloads back to the client-side router
+    // Return safely to your frontend checkout form
     return res.status(200).json({ data, signature });
+
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error('Unhandled runtime exception in backend serverless function:', error);
+    return res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 }
-```
-eof
-
-### What to do now:
-1. Open Notepad++ on your computer.
-2. Open the file **`C:\sheridanls\api\create-liqpay.js`**.
-3. Replace all existing text with the code above and save the file.
-
-Once you have saved this backend file, let me know, and we will move to Step 2: updating your React frontend `App.jsx` to show the brand-new dropdown menu!
