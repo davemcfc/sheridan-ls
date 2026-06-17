@@ -111,8 +111,7 @@ const translations = {
         tuitionTitle: 'Послуги викладання',
         translationTitle: 'Послуги перекладу',
         specifyWords: 'Вказати великий обсяг слів:',
-        wordsDropdownPlaceholder: 'Оберіть обсяг слів',
-        wordsInputPlaceholder: 'Кількість слів'
+        wordsDropdownPlaceholder: 'Оберіть обсяг слів'
       }
     },
     footer: {
@@ -219,8 +218,7 @@ const translations = {
         tuitionTitle: 'Tuition Services',
         translationTitle: 'Translation Services',
         specifyWords: 'Specify larger word count:',
-        wordsDropdownPlaceholder: 'Choose volume',
-        wordsInputPlaceholder: 'Word count'
+        wordsDropdownPlaceholder: 'Choose volume'
       }
     },
     footer: {
@@ -257,9 +255,6 @@ export default function App() {
   
   // Active Preset Tracker State
   const [activePreset, setActivePreset] = useState('tuition-weekly');
-
-  // Interactive local states for word calculation
-  const [presetWordInput, setPresetWordInput] = useState('');
 
   // Production integration state parameters
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -311,7 +306,6 @@ export default function App() {
 
   const currentTotal = getCalculatedTotal();
 
-  // Production-grade connection handler to call backend endpoints
   const handlePaymentSubmit = async () => {
     setIsSubmitting(true);
     setPaymentError('');
@@ -370,7 +364,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FBFBFE] text-slate-800 antialiased flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white">
       
-      {/* HEADER SECTION - Flexbox layout without absolute positioning to avoid iframe overlap bugs */}
+      {/* HEADER SECTION */}
       <header className="bg-white border-b border-slate-200/85">
         <div className="max-w-6xl mx-auto px-4">
           
@@ -468,7 +462,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* HERO SECTION - Now rendered conditionally ONLY when 'about' tab is active */}
+      {/* HERO SECTION - Active on about tab */}
       {activeTab === 'about' && (
         <section className="bg-gradient-to-b from-blue-50/80 via-white to-[#FBFBFE] py-12 md:py-20 border-b border-slate-100 animate-fadeIn">
           <div className="max-w-4xl mx-auto px-4 text-center">
@@ -513,7 +507,7 @@ export default function App() {
         </section>
       )}
 
-      {/* MAIN CONTAINER FOR RENDERING SELECTED ACTIVE TAB */}
+      {/* MAIN CONTAINER */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
         
         {/* ABOUT TAB VIEW */}
@@ -789,6 +783,7 @@ export default function App() {
                 </div>
               </div>
 
+              {}
               {/* Quick Amount Selector Segment for Returning Clients */}
               <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 mb-8">
                 <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">
@@ -837,7 +832,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Sub-Group 2: Translation Services (strictly BELOW tuition fee buttons) */}
+                {/* Sub-Group 2: Translation Services */}
                 <div className="border-t border-slate-200/60 pt-4">
                   <h5 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
                     {t.payment.presets.translationTitle}
@@ -857,51 +852,30 @@ export default function App() {
                       <span>{t.payment.presets.translationBase}</span>
                     </button>
 
-                    {/* Larger Word Count Specification Widget */}
+                    {/* Larger Word Count Specification Dropdown (Rogue input box completely removed) */}
                     <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-1.5">
                       <span className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide">
                         {t.payment.presets.specifyWords}
                       </span>
                       
-                      <div className="flex gap-2">
-                        {/* Word Volume Quick Selection */}
-                        <select
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (val > 0) {
-                              setPresetWordInput(''); // Reset manual field
-                              handleLargeWordSelect(val);
-                            }
-                          }}
-                          className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-slate-700 focus:outline-none"
-                          value={activePreset.startsWith('translation-large-') ? activePreset.replace('translation-large-', '') : ""}
-                        >
-                          <option value="" disabled>{t.payment.presets.wordsDropdownPlaceholder}</option>
-                          <option value="1500">{currentLang === 'uk' ? '1 500 слів (6 000 грн / ≈ $135)' : '1,500 words (6,000 UAH / ≈ $135)'}</option>
-                          <option value="2000">{currentLang === 'uk' ? '2 000 слів (8 000 грн / ≈ $180)' : '2,000 words (8,000 UAH / ≈ $180)'}</option>
-                          <option value="3000">{currentLang === 'uk' ? '3 000 слів (12 000 грн / ≈ $270)' : '3,000 words (12,000 UAH / ≈ $270)'}</option>
-                          <option value="5000">{currentLang === 'uk' ? '5 000 слів (20 000 грн / ≈ $450)' : '5,000 words (20,000 UAH / ≈ $450)'}</option>
-                          <option value="10000">{currentLang === 'uk' ? '10 000 слів (40 000 грн / ≈ $900)' : '10,000 words (40,000 UAH / ≈ $900)'}</option>
-                        </select>
-
-                        {/* Or Direct Input for high custom volumes */}
-                        <div className="relative flex-1">
-                          <input
-                            type="number"
-                            placeholder={t.payment.presets.wordsInputPlaceholder}
-                            value={presetWordInput}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 pr-8 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-500"
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value) || '';
-                              setPresetWordInput(val);
-                              if (val > 0) {
-                                handleLargeWordSelect(val);
-                              }
-                            }}
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-400">words</span>
-                        </div>
-                      </div>
+                      {/* Full Width Dropdown */}
+                      <select
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (val > 0) {
+                            handleLargeWordSelect(val);
+                          }
+                        }}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-500"
+                        value={activePreset.startsWith('translation-large-') ? activePreset.replace('translation-large-', '') : ""}
+                      >
+                        <option value="" disabled>{t.payment.presets.wordsDropdownPlaceholder}</option>
+                        <option value="1500">{currentLang === 'uk' ? '1 500 слів (6 000 грн / ≈ $135)' : '1,500 words (6,000 UAH / ≈ $135)'}</option>
+                        <option value="2000">{currentLang === 'uk' ? '2 000 слів (8 000 грн / ≈ $180)' : '2,000 words (8,000 UAH / ≈ $180)'}</option>
+                        <option value="3000">{currentLang === 'uk' ? '3 000 слів (12 000 грн / ≈ $270)' : '3,000 words (12,000 UAH / ≈ $270)'}</option>
+                        <option value="5000">{currentLang === 'uk' ? '5 000 слів (20 000 грн / ≈ $450)' : '5,000 words (20,000 UAH / ≈ $450)'}</option>
+                        <option value="10000">{currentLang === 'uk' ? '10 000 слів (40 000 грн / ≈ $900)' : '10,000 words (40,000 UAH / ≈ $900)'}</option>
+                      </select>
                     </div>
 
                   </div>
@@ -913,7 +887,6 @@ export default function App() {
                     type="button"
                     onClick={() => {
                       setActivePreset('custom');
-                      setPresetWordInput('');
                     }}
                     className={`text-xs font-extrabold px-3.5 py-1.5 rounded-lg border transition-all ${
                       activePreset === 'custom'
@@ -930,6 +903,7 @@ export default function App() {
                 {t.payment.desc}
               </p>
 
+              {}
               <div className="space-y-4">
                 
                 {/* Service Picker */}
@@ -940,7 +914,6 @@ export default function App() {
                     onChange={(e) => {
                       setPayService(e.target.value);
                       setActivePreset('custom');
-                      setPresetWordInput('');
                     }}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   >
@@ -961,7 +934,6 @@ export default function App() {
                       onChange={(e) => {
                         setPayAmount(parseInt(e.target.value) || 0);
                         setActivePreset('custom');
-                        setPresetWordInput('');
                       }}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-12 py-3 text-sm font-extrabold focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       required
@@ -1051,6 +1023,7 @@ export default function App() {
 
       </main>
 
+      {}
       {/* FOOTER AREA */}
       <footer className="bg-slate-900 text-white pt-16 pb-8 border-t border-slate-850 mt-auto">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
