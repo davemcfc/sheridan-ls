@@ -7,6 +7,7 @@ import {
   Phone, 
   MapPin, 
   ArrowRight, 
+  CheckCircle, 
   Info, 
   Calendar, 
   CreditCard,
@@ -98,7 +99,20 @@ const translations = {
         submit: 'Оплатити через LiqPay',
         disclaimer: 'Натискаючи кнопку, ви погоджуєтесь з правилами надання послуг та політикою повернення коштів.',
         errorHeader: 'Помилка ініціалізації',
-        errorMessage: 'Помилка підключення до платіжного шлюзу. Будь ласка, перевірте з\'єднання та спробуйте ще раз.'
+        errorMessage: 'Помилка підключення до платіжного шлюзу. Будь ласка, перевірте з\'єднання та спробуйте ще раз або зверніться до підтримки.'
+      },
+      presets: {
+        title: 'Швидкі пакети для постійних клієнтів',
+        custom: 'Інша сума',
+        tuitionHour: '1 година занять (400 грн / ≈ $10)',
+        tuitionWeekly: 'Стандартний пакет занять (2 000 грн / ≈ $50)',
+        translationBase: 'Переклад 1 000 слів (4 000 грн / ≈ $90)',
+        customMonthly: 'Місячний пакет (11 000 грн / ≈ $250)',
+        tuitionTitle: 'Послуги викладання',
+        translationTitle: 'Послуги перекладу',
+        specifyWords: 'Вказати великий обсяг слів:',
+        wordsDropdownPlaceholder: 'Оберіть обсяг слів',
+        wordsInputPlaceholder: 'Кількість слів'
       }
     },
     footer: {
@@ -194,6 +208,19 @@ const translations = {
         disclaimer: 'By proceeding, you agree to our service terms, digital delivery, and 24-hour cancellation policies.',
         errorHeader: 'Initialization Error',
         errorMessage: 'Failed to connect to the payment gateway. Please check your network and try again.'
+      },
+      presets: {
+        title: 'Quick Presets for Regular Clients',
+        custom: 'Custom Amount',
+        tuitionHour: '1 Hour Tuition (400 UAH / ≈ $10)',
+        tuitionWeekly: 'Standard Tuition Package (2,000 UAH / ≈ $50)',
+        translationBase: '1,000 Words Translation (4,000 UAH / ≈ $90)',
+        customMonthly: 'Monthly Package (11,000 UAH / ≈ $250)',
+        tuitionTitle: 'Tuition Services',
+        translationTitle: 'Translation Services',
+        specifyWords: 'Specify larger word count:',
+        wordsDropdownPlaceholder: 'Choose volume',
+        wordsInputPlaceholder: 'Word count'
       }
     },
     footer: {
@@ -209,28 +236,38 @@ const translations = {
 };
 
 export default function App() {
-  const [currentLang, setCurrentLang] = useState('uk');
+  const [currentLang, setCurrentLang] = useState('uk'); // Ukrainian is default to comply with Article 30
   const [activeTab, setActiveTab] = useState('about');
   
+  // Address edit configurations for banking validation
   const [regAddress, setRegAddress] = useState('');
   const [isEditingAddress, setIsEditingAddress] = useState(false);
 
+  // Calculator logic state
   const [calcType, setCalcType] = useState('tuition');
   const [calcHours, setCalcHours] = useState(5);
   const [calcWords, setCalcWords] = useState(1200);
   
+  // Payment gateway states
   const [payAmount, setPayAmount] = useState(2000);
   const [payService, setPayService] = useState('tuition');
   const [payName, setPayName] = useState('');
   const [payEmail, setPayEmail] = useState('');
   const [payPhone, setPayPhone] = useState('+380');
   
+  // Active Preset Tracker State
+  const [activePreset, setActivePreset] = useState('tuition-weekly');
+
+  // Interactive local states for word calculation
+  const [presetWordInput, setPresetWordInput] = useState('');
+
   // Production integration state parameters
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState('');
 
   const t = translations[currentLang];
 
+  // Set default localized address on load
   useEffect(() => {
     setRegAddress(translations[currentLang].footer.addressDefault);
   }, [currentLang]);
@@ -240,12 +277,30 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  // Handle instant value transition from dynamic cost estimator to payment portal state
   const handleCalculatorCheckout = (calculatedValue, serviceType) => {
     setPayAmount(calculatedValue);
     setPayService(serviceType);
+    setActivePreset('custom'); // Default to custom on manual calculations
     changeTab('pay');
   };
 
+  // Helper method to apply payment presets
+  const handlePresetSelect = (amount, serviceType, presetId) => {
+    setPayAmount(amount);
+    setPayService(serviceType);
+    setActivePreset(presetId);
+  };
+
+  // Handle customized large word counts via selection tools
+  const handleLargeWordSelect = (wordCount) => {
+    const calculatedAmount = wordCount * 4; // 400 UAH per 100 words = 4 UAH per 1 word
+    setPayAmount(calculatedAmount);
+    setPayService('translation');
+    setActivePreset(`translation-large-${wordCount}`);
+  };
+
+  // Dynamic cost evaluation
   const getCalculatedTotal = () => {
     if (calcType === 'tuition') {
       return calcHours * 400;
@@ -257,8 +312,7 @@ export default function App() {
   const currentTotal = getCalculatedTotal();
 
   // Production-grade connection handler to call backend endpoints
-  const handlePaymentSubmit = async (e) => {
-    e.preventDefault();
+  const handlePaymentSubmit = async () => {
     setIsSubmitting(true);
     setPaymentError('');
     
@@ -316,10 +370,11 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FBFBFE] text-slate-800 antialiased flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white">
       
-      {/* HEADER SECTION */}
+      {/* HEADER SECTION - Flexbox layout without absolute positioning to avoid iframe overlap bugs */}
       <header className="bg-white border-b border-slate-200/85">
         <div className="max-w-6xl mx-auto px-4">
           
+          {/* Top Row: Business Logo and Mobile Lang Toggle */}
           <div className="py-5 flex items-center justify-between">
             <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => changeTab('about')}>
               <span className="font-extrabold text-2xl text-slate-900 tracking-tight flex items-center gap-2">
@@ -353,6 +408,7 @@ export default function App() {
             </div>
           </div>
 
+          {/* Bottom Row: Tabs and Desktop Lang Toggle */}
           <div className="flex flex-col md:flex-row md:items-end justify-between">
             
             {/* NAVIGATION TABS */}
@@ -412,7 +468,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* HERO SECTION */}
+      {/* HERO SECTION - Now rendered conditionally ONLY when 'about' tab is active */}
       {activeTab === 'about' && (
         <section className="bg-gradient-to-b from-blue-50/80 via-white to-[#FBFBFE] py-12 md:py-20 border-b border-slate-100 animate-fadeIn">
           <div className="max-w-4xl mx-auto px-4 text-center">
@@ -436,7 +492,8 @@ export default function App() {
               <button 
                 type="button"
                 onClick={() => {
-                  setPayAmount(400); 
+                  setPayAmount(2000); 
+                  setActivePreset('tuition-weekly');
                   changeTab('pay');
                 }}
                 className="bg-[#78B43E] hover:bg-[#689f34] text-white px-6 py-3.5 rounded-xl font-extrabold text-base shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
@@ -456,7 +513,7 @@ export default function App() {
         </section>
       )}
 
-      {/* MAIN CONTAINER */}
+      {/* MAIN CONTAINER FOR RENDERING SELECTED ACTIVE TAB */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
         
         {/* ABOUT TAB VIEW */}
@@ -508,6 +565,7 @@ export default function App() {
         {activeTab === 'services' && (
           <div className="space-y-12 animate-fadeIn">
             
+            {/* Rates comparison cards */}
             <div className="grid md:grid-cols-2 gap-8">
               
               {/* Tuition card */}
@@ -567,6 +625,7 @@ export default function App() {
                 <h3 className="text-xl sm:text-2xl font-extrabold mb-2">{t.services.calculator.title}</h3>
                 <p className="text-slate-300 text-xs sm:text-sm mb-8">{t.services.calculator.subtitle}</p>
 
+                {/* Selection switch */}
                 <div className="mb-6">
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{t.services.calculator.typeLabel}</label>
                   <div className="grid grid-cols-2 gap-2 bg-slate-800 p-1 rounded-lg max-w-lg border border-slate-700">
@@ -591,6 +650,7 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* Range inputs based on type */}
                 {calcType === 'tuition' ? (
                   <div className="space-y-4 mb-8">
                     <div className="flex justify-between items-baseline">
@@ -632,6 +692,7 @@ export default function App() {
                   </div>
                 )}
 
+                {/* Real-time total evaluation and action */}
                 <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <span className="block text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">{t.services.calculator.estTotal}</span>
@@ -672,6 +733,7 @@ export default function App() {
 
               <div className="space-y-6">
                 
+                {/* Delivery block */}
                 <div className="flex gap-4 p-6 sm:p-8 bg-blue-50/50 rounded-2xl border border-blue-100/60 transition-all">
                   <div className="flex-shrink-0 mt-1">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
@@ -688,6 +750,7 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* Refund block */}
                 <div className="flex gap-4 p-6 sm:p-8 bg-blue-50/50 rounded-2xl border border-blue-100/60 transition-all">
                   <div className="flex-shrink-0 mt-1">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
@@ -726,19 +789,159 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Quick Amount Selector Segment for Returning Clients */}
+              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 mb-8">
+                <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">
+                  {t.payment.presets.title}
+                </h4>
+
+                {/* Sub-Group 1: Tuition Packages */}
+                <div className="mb-5">
+                  <h5 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
+                    {t.payment.presets.tuitionTitle}
+                  </h5>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => handlePresetSelect(400, 'tuition', 'tuition-1hr')}
+                      className={`text-left p-3 rounded-xl border text-xs font-bold transition-all duration-200 ${
+                        activePreset === 'tuition-1hr'
+                          ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      {t.payment.presets.tuitionHour}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePresetSelect(2000, 'tuition', 'tuition-weekly')}
+                      className={`text-left p-3 rounded-xl border text-xs font-bold transition-all duration-200 ${
+                        activePreset === 'tuition-weekly'
+                          ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      {t.payment.presets.tuitionWeekly}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePresetSelect(11000, 'tuition', 'custom-monthly')}
+                      className={`text-left p-3 rounded-xl border text-xs font-bold transition-all duration-200 ${
+                        activePreset === 'custom-monthly'
+                          ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      {t.payment.presets.customMonthly}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sub-Group 2: Translation Services (strictly BELOW tuition fee buttons) */}
+                <div className="border-t border-slate-200/60 pt-4">
+                  <h5 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">
+                    {t.payment.presets.translationTitle}
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
+                    
+                    {/* Standard base translation button */}
+                    <button
+                      type="button"
+                      onClick={() => handlePresetSelect(4000, 'translation', 'translation-1k')}
+                      className={`text-left p-3.5 rounded-xl border text-xs font-bold transition-all duration-200 min-h-[56px] flex items-center justify-between ${
+                        activePreset === 'translation-1k'
+                          ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-xs'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      <span>{t.payment.presets.translationBase}</span>
+                    </button>
+
+                    {/* Larger Word Count Specification Widget */}
+                    <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-1.5">
+                      <span className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wide">
+                        {t.payment.presets.specifyWords}
+                      </span>
+                      
+                      <div className="flex gap-2">
+                        {/* Word Volume Quick Selection */}
+                        <select
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (val > 0) {
+                              setPresetWordInput(''); // Reset manual field
+                              handleLargeWordSelect(val);
+                            }
+                          }}
+                          className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs font-bold text-slate-700 focus:outline-none"
+                          value={activePreset.startsWith('translation-large-') ? activePreset.replace('translation-large-', '') : ""}
+                        >
+                          <option value="" disabled>{t.payment.presets.wordsDropdownPlaceholder}</option>
+                          <option value="1500">{currentLang === 'uk' ? '1 500 слів (6 000 грн / ≈ $135)' : '1,500 words (6,000 UAH / ≈ $135)'}</option>
+                          <option value="2000">{currentLang === 'uk' ? '2 000 слів (8 000 грн / ≈ $180)' : '2,000 words (8,000 UAH / ≈ $180)'}</option>
+                          <option value="3000">{currentLang === 'uk' ? '3 000 слів (12 000 грн / ≈ $270)' : '3,000 words (12,000 UAH / ≈ $270)'}</option>
+                          <option value="5000">{currentLang === 'uk' ? '5 000 слів (20 000 грн / ≈ $450)' : '5,000 words (20,000 UAH / ≈ $450)'}</option>
+                          <option value="10000">{currentLang === 'uk' ? '10 000 слів (40 000 грн / ≈ $900)' : '10,000 words (40,000 UAH / ≈ $900)'}</option>
+                        </select>
+
+                        {/* Or Direct Input for high custom volumes */}
+                        <div className="relative flex-1">
+                          <input
+                            type="number"
+                            placeholder={t.payment.presets.wordsInputPlaceholder}
+                            value={presetWordInput}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 pr-8 text-xs font-bold text-slate-700 focus:outline-none focus:border-blue-500"
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || '';
+                              setPresetWordInput(val);
+                              if (val > 0) {
+                                handleLargeWordSelect(val);
+                              }
+                            }}
+                          />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-400">words</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Custom Reset Button to override presets */}
+                <div className="mt-4 flex items-center justify-end border-t border-slate-200/60 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActivePreset('custom');
+                      setPresetWordInput('');
+                    }}
+                    className={`text-xs font-extrabold px-3.5 py-1.5 rounded-lg border transition-all ${
+                      activePreset === 'custom'
+                        ? 'bg-blue-600 border-blue-600 text-white'
+                        : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {t.payment.presets.custom}
+                  </button>
+                </div>
+              </div>
+
               <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-6">
                 {t.payment.desc}
               </p>
 
-              {/* Replaced container div with fully validated form tag */}
-              <form onSubmit={handlePaymentSubmit} className="space-y-4">
+              <div className="space-y-4">
                 
                 {/* Service Picker */}
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t.payment.form.serviceType}</label>
                   <select 
                     value={payService} 
-                    onChange={(e) => setPayService(e.target.value)}
+                    onChange={(e) => {
+                      setPayService(e.target.value);
+                      setActivePreset('custom');
+                      setPresetWordInput('');
+                    }}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="tuition">{t.services.tuition.title}</option>
@@ -755,7 +958,11 @@ export default function App() {
                       min="100"
                       step="50"
                       value={payAmount}
-                      onChange={(e) => setPayAmount(parseInt(e.target.value) || 0)}
+                      onChange={(e) => {
+                        setPayAmount(parseInt(e.target.value) || 0);
+                        setActivePreset('custom');
+                        setPresetWordInput('');
+                      }}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-12 py-3 text-sm font-extrabold focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       required
                     />
@@ -802,10 +1009,11 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Submit button supporting loading state animations */}
+                {/* Submit button supporting dynamic loading animations */}
                 <button 
-                  type="submit"
+                  type="button"
                   disabled={isSubmitting}
+                  onClick={handlePaymentSubmit}
                   className={`w-full bg-[#78B43E] hover:bg-[#689f34] active:scale-[0.99] text-white font-extrabold py-4 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mt-2 shadow-sm text-base ${
                     isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
@@ -824,7 +1032,7 @@ export default function App() {
                 <p className="text-[11px] text-slate-400 leading-relaxed text-center mt-3">
                   {t.payment.form.disclaimer}
                 </p>
-              </form>
+              </div>
 
               {/* Secure in-app custom error notification replaces browser alert popup */}
               {paymentError && (
@@ -871,6 +1079,7 @@ export default function App() {
                   <a href="tel:+380970627640" className="text-slate-300 hover:text-white text-sm transition-colors">+380 970 627 640</a>
                 </li>
                 
+                {/* Dynamic Address Config Block for Banking Verification */}
                 <li className="space-y-2">
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-blue-500 flex-shrink-0 mt-1" />
@@ -918,6 +1127,7 @@ export default function App() {
 
           </div>
 
+          {/* Legal FOP Signature Footnote */}
           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <p className="text-slate-500 text-xs font-semibold">
               © {new Date().getFullYear()} Sheridan Language Services. {t.footer.legal}. {t.footer.rights}
@@ -932,6 +1142,7 @@ export default function App() {
         </div>
       </footer>
 
+      {/* Inline styles for tab transitions and layout scrollbar styling */}
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar { height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
