@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* STREAMING_CHUNK: Styling the Tailwind entry point and scrollbars... */
+@import "tailwindcss";
 
 .custom-scrollbar::-webkit-scrollbar { height: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
