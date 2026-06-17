@@ -7,7 +7,6 @@ import {
   Phone, 
   MapPin, 
   ArrowRight, 
-  CheckCircle, 
   Info, 
   Calendar, 
   CreditCard,
@@ -98,7 +97,8 @@ const translations = {
         clientPhone: 'Контактний телефон',
         submit: 'Оплатити через LiqPay',
         disclaimer: 'Натискаючи кнопку, ви погоджуєтесь з правилами надання послуг та політикою повернення коштів.',
-        demoSuccess: 'Імітація успішної транзакції! На реальному сайті Weblium ця форма безпечно передасть параметри безпосередньо у ваш мерчант-аккаунт LiqPay.'
+        errorHeader: 'Помилка ініціалізації',
+        errorMessage: 'Помилка підключення до платіжного шлюзу. Будь ласка, перевірте з\'єднання та спробуйте ще раз.'
       }
     },
     footer: {
@@ -192,7 +192,8 @@ const translations = {
         clientPhone: 'Contact Telephone',
         submit: 'Pay Securely via LiqPay',
         disclaimer: 'By proceeding, you agree to our service terms, digital delivery, and 24-hour cancellation policies.',
-        demoSuccess: 'Demo payment simulated! On your live Weblium site, this form will connect directly to LiqPay with your custom merchant parameters.'
+        errorHeader: 'Initialization Error',
+        errorMessage: 'Failed to connect to the payment gateway. Please check your network and try again.'
       }
     },
     footer: {
@@ -208,29 +209,28 @@ const translations = {
 };
 
 export default function App() {
-  const [currentLang, setCurrentLang] = useState('uk'); // Ukrainian is default to comply with Article 30
+  const [currentLang, setCurrentLang] = useState('uk');
   const [activeTab, setActiveTab] = useState('about');
   
-  // Address edit configurations for banking validation
   const [regAddress, setRegAddress] = useState('');
   const [isEditingAddress, setIsEditingAddress] = useState(false);
 
-  // Calculator logic state
   const [calcType, setCalcType] = useState('tuition');
   const [calcHours, setCalcHours] = useState(5);
   const [calcWords, setCalcWords] = useState(1200);
   
-  // Payment gateway demo state
   const [payAmount, setPayAmount] = useState(2000);
   const [payService, setPayService] = useState('tuition');
   const [payName, setPayName] = useState('');
   const [payEmail, setPayEmail] = useState('');
   const [payPhone, setPayPhone] = useState('+380');
-  const [showDemoSuccess, setShowDemoSuccess] = useState(false);
+  
+  // Production integration state parameters
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   const t = translations[currentLang];
 
-  // Set default localized address on load
   useEffect(() => {
     setRegAddress(translations[currentLang].footer.addressDefault);
   }, [currentLang]);
@@ -240,14 +240,12 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
-  // Handle instant value transition from dynamic cost estimator to payment portal state
   const handleCalculatorCheckout = (calculatedValue, serviceType) => {
     setPayAmount(calculatedValue);
     setPayService(serviceType);
     changeTab('pay');
   };
 
-  // Dynamic cost evaluation
   const getCalculatedTotal = () => {
     if (calcType === 'tuition') {
       return calcHours * 400;
@@ -258,22 +256,70 @@ export default function App() {
 
   const currentTotal = getCalculatedTotal();
 
-  const handleDemoSubmit = (e) => {
+  // Production-grade connection handler to call backend endpoints
+  const handlePaymentSubmit = async (e) => {
     e.preventDefault();
-    setShowDemoSuccess(true);
-    setTimeout(() => {
-      setShowDemoSuccess(false);
-    }, 8000);
+    setIsSubmitting(true);
+    setPaymentError('');
+    
+    try {
+      // 1. Call secure API route to parse variables and sign them
+      const response = await fetch('/api/create-liqpay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: payAmount,
+          description: `${payService === 'tuition' ? 'Tuition' : 'Translation'} Services - ${payName}`,
+          clientPhone: payPhone,
+          clientEmail: payEmail
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Server API integration returned non-200 status');
+      }
+
+      const { data, signature } = await response.json();
+
+      if (!data || !signature) {
+        throw new Error('API output missing required data or signature keys');
+      }
+
+      // 2. Generate a temporary hidden form element to force a POST redirect
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://www.liqpay.ua/api/3/checkout';
+      form.acceptCharset = 'utf-8';
+
+      const dataInput = document.createElement('input');
+      dataInput.type = 'hidden';
+      dataInput.name = 'data';
+      dataInput.value = data;
+      form.appendChild(dataInput);
+
+      const sigInput = document.createElement('input');
+      sigInput.type = 'hidden';
+      sigInput.name = 'signature';
+      sigInput.value = signature;
+      form.appendChild(sigInput);
+
+      document.body.appendChild(form);
+      form.submit(); // Dispatches client securely to PrivatBank page
+    } catch (error) {
+      console.error('Payment gateway initialization failed:', error);
+      setPaymentError(t.payment.form.errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#FBFBFE] text-slate-800 antialiased flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white">
       
-      {/* HEADER SECTION - Flexbox layout without absolute positioning to avoid iframe overlap bugs */}
+      {/* HEADER SECTION */}
       <header className="bg-white border-b border-slate-200/85">
         <div className="max-w-6xl mx-auto px-4">
           
-          {/* Top Row: Business Logo and Mobile Lang Toggle */}
           <div className="py-5 flex items-center justify-between">
             <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => changeTab('about')}>
               <span className="font-extrabold text-2xl text-slate-900 tracking-tight flex items-center gap-2">
@@ -307,7 +353,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Bottom Row: Tabs and Desktop Lang Toggle */}
           <div className="flex flex-col md:flex-row md:items-end justify-between">
             
             {/* NAVIGATION TABS */}
@@ -367,7 +412,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* HERO SECTION - Now rendered conditionally ONLY when 'about' tab is active */}
+      {/* HERO SECTION */}
       {activeTab === 'about' && (
         <section className="bg-gradient-to-b from-blue-50/80 via-white to-[#FBFBFE] py-12 md:py-20 border-b border-slate-100 animate-fadeIn">
           <div className="max-w-4xl mx-auto px-4 text-center">
@@ -411,7 +456,7 @@ export default function App() {
         </section>
       )}
 
-      {/* MAIN CONTAINER FOR RENDERING SELECTED ACTIVE TAB */}
+      {/* MAIN CONTAINER */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
         
         {/* ABOUT TAB VIEW */}
@@ -463,7 +508,6 @@ export default function App() {
         {activeTab === 'services' && (
           <div className="space-y-12 animate-fadeIn">
             
-            {/* Rates comparison cards */}
             <div className="grid md:grid-cols-2 gap-8">
               
               {/* Tuition card */}
@@ -523,7 +567,6 @@ export default function App() {
                 <h3 className="text-xl sm:text-2xl font-extrabold mb-2">{t.services.calculator.title}</h3>
                 <p className="text-slate-300 text-xs sm:text-sm mb-8">{t.services.calculator.subtitle}</p>
 
-                {/* Selection switch */}
                 <div className="mb-6">
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{t.services.calculator.typeLabel}</label>
                   <div className="grid grid-cols-2 gap-2 bg-slate-800 p-1 rounded-lg max-w-lg border border-slate-700">
@@ -548,7 +591,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Range inputs based on type */}
                 {calcType === 'tuition' ? (
                   <div className="space-y-4 mb-8">
                     <div className="flex justify-between items-baseline">
@@ -590,7 +632,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Real-time total evaluation and action */}
                 <div className="border-t border-slate-800 pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <span className="block text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">{t.services.calculator.estTotal}</span>
@@ -631,7 +672,6 @@ export default function App() {
 
               <div className="space-y-6">
                 
-                {/* Delivery block */}
                 <div className="flex gap-4 p-6 sm:p-8 bg-blue-50/50 rounded-2xl border border-blue-100/60 transition-all">
                   <div className="flex-shrink-0 mt-1">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
@@ -648,7 +688,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Refund block */}
                 <div className="flex gap-4 p-6 sm:p-8 bg-blue-50/50 rounded-2xl border border-blue-100/60 transition-all">
                   <div className="flex-shrink-0 mt-1">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
@@ -691,7 +730,8 @@ export default function App() {
                 {t.payment.desc}
               </p>
 
-              <div className="space-y-4">
+              {/* Replaced container div with fully validated form tag */}
+              <form onSubmit={handlePaymentSubmit} className="space-y-4">
                 
                 {/* Service Picker */}
                 <div>
@@ -762,27 +802,37 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* Submit button supporting loading state animations */}
                 <button 
-                  type="button"
-                  onClick={handleDemoSubmit}
-                  className="w-full bg-[#78B43E] hover:bg-[#689f34] text-white font-extrabold py-4 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mt-2 shadow-sm text-base"
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`w-full bg-[#78B43E] hover:bg-[#689f34] active:scale-[0.99] text-white font-extrabold py-4 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mt-2 shadow-sm text-base ${
+                    isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
                 >
-                  <CreditCard className="w-5 h-5" />
-                  {t.payment.form.submit} ({payAmount.toLocaleString()} UAH)
+                  {isSubmitting ? (
+                    <span className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
+                  ) : (
+                    <CreditCard className="w-5 h-5" />
+                  )}
+                  {isSubmitting 
+                    ? (currentLang === 'uk' ? 'Підключення...' : 'Connecting...') 
+                    : `${t.payment.form.submit} (${payAmount.toLocaleString()} UAH)`
+                  }
                 </button>
 
                 <p className="text-[11px] text-slate-400 leading-relaxed text-center mt-3">
                   {t.payment.form.disclaimer}
                 </p>
-              </div>
+              </form>
 
-              {/* Simulated payment gateway popup feedback */}
-              {showDemoSuccess && (
-                <div className="mt-6 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-800 text-xs sm:text-sm flex gap-2.5 items-start animate-fadeIn">
-                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              {/* Secure in-app custom error notification replaces browser alert popup */}
+              {paymentError && (
+                <div className="mt-6 p-4 bg-rose-50 border border-rose-100 rounded-xl text-rose-800 text-xs sm:text-sm flex gap-2.5 items-start animate-fadeIn">
+                  <span className="text-rose-600 flex-shrink-0 mt-0.5 text-base">⚠️</span>
                   <div>
-                    <span className="font-bold block mb-0.5">{currentLang === 'uk' ? 'Форму валідовано!' : 'Form Validated!'}</span>
-                    <p>{t.payment.form.demoSuccess}</p>
+                    <span className="font-bold block mb-0.5">{t.payment.form.errorHeader}</span>
+                    <p>{paymentError}</p>
                   </div>
                 </div>
               )}
@@ -821,7 +871,6 @@ export default function App() {
                   <a href="tel:+380970627640" className="text-slate-300 hover:text-white text-sm transition-colors">+380 970 627 640</a>
                 </li>
                 
-                {/* Dynamic Address Config Block for Banking Verification */}
                 <li className="space-y-2">
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-blue-500 flex-shrink-0 mt-1" />
@@ -869,7 +918,6 @@ export default function App() {
 
           </div>
 
-          {/* Legal FOP Signature Footnote */}
           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <p className="text-slate-500 text-xs font-semibold">
               © {new Date().getFullYear()} Sheridan Language Services. {t.footer.legal}. {t.footer.rights}
@@ -884,7 +932,6 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Inline styles for tab transitions and layout scrollbar styling */}
       <style dangerouslySetInnerHTML={{__html: `
         .custom-scrollbar::-webkit-scrollbar { height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
