@@ -20,8 +20,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid or missing payment amount' });
   }
 
-  // ALIGNED SANDBOX KEYS (Merchant ID: 1482811833075677)
-  const publicKey = 'sandbox_i1482811833075677';
+  // 🔥 CORRECT SANDBOX KEYS (Matched default test credentials)
+  const publicKey = 'sandbox_i89035654316';
   const privateKey = 'sandbox_p1482811833075677';
 
   const params = {
