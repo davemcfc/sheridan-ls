@@ -20,10 +20,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid or missing payment amount' });
   }
 
-  // 🔥 CORRECT SANDBOX KEYS (Matched default test credentials)
+  // Official default test credentials
   const publicKey = 'sandbox_i89035654316';
   const privateKey = 'sandbox_p1482811833075677';
 
+  // Construct the parameters, including the explicit sandbox parameter
   const params = {
     public_key: publicKey,
     version: 3,
@@ -32,7 +33,8 @@ export default async function handler(req, res) {
     currency: 'UAH',
     description: description || 'Service Payment',
     order_id: 'SLS-' + Date.now(),
-    result_url: 'https://www.sheridanls.com.ua/'
+    result_url: 'https://www.sheridanls.com.ua/',
+    sandbox: 1 // 🔥 CRITICAL: Directs LiqPay to route this request to the test sandbox database
   };
 
   const data = Buffer.from(JSON.stringify(params)).toString('base64');
