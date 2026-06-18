@@ -1,56 +1,45 @@
-// Final cache bust to force Vercel overwrite - June 18
 import crypto from 'crypto';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') return res.status(405).end();
+
+  // Safely extract amount and description from the incoming request body
+  let body = req.body || {};
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      body = {};
+    }
   }
 
-  try {
-    const body = req.body || {};
-    const { amount, currency, description, clientPhone, clientEmail } = body;
+  const { amount, description } = body;
 
-    const parsedAmount = parseFloat(amount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      return res.status(400).json({ error: 'Invalid or missing payment amount' });
-    }
-
-    const publicKey = process.env.LIQPAY_PUBLIC_KEY;
-    const privateKey = process.env.LIQPAY_PRIVATE_KEY;
-
-    if (!publicKey || !privateKey) {
-      console.error('CRITICAL: LiqPay Public or Private keys are not set up in Vercel environment variables.');
-      return res.status(500).json({
-        error: 'Payment Gateway Error: Merchant credentials are missing in the Vercel Settings panel.'
-      });
-    }
-
-    const orderId = `SLS-${Date.now()}`;
-
-    const jsonParams = {
-      public_key: publicKey,
-      version: 3,
-      action: 'pay',
-      amount: parsedAmount,
-      currency: currency || 'UAH',
-      description: description || 'Language Services Payment',
-      order_id: orderId,
-      result_url: 'https://www.sheridanls.com.ua/',
-    };
-
-    const jsonString = JSON.stringify(jsonParams);
-    const data = Buffer.from(jsonString).toString('base64');
-
-    const signString = privateKey + data + privateKey;
-    const signature = crypto
-      .createHash('sha1')
-      .update(signString)
-      .digest('base64');
-
-    return res.status(200).json({ data, signature });
-
-  } catch (error) {
-    console.error('Unhandled runtime exception:', error);
-    return res.status(500).json({ error: error.message || 'Internal Server Error' });
+  const parsedAmount = parseFloat(amount);
+  if (isNaN(parsedAmount) || parsedAmount <= 0) {
+    return res.status(400).json({ error: 'Invalid or missing payment amount' });
   }
+
+  // ALIGNED SANDBOX KEYS (Merchant ID: 1482811833075677)
+  const publicKey = 'sandbox_i1482811833075677';
+  const privateKey = 'sandbox_p1482811833075677';
+
+  const params = {
+    public_key: publicKey,
+    version: 3,
+    action: 'pay',
+    amount: parsedAmount,
+    currency: 'UAH',
+    description: description || 'Service Payment',
+    order_id: 'SLS-' + Date.now(),
+    result_url: 'https://www.sheridanls.com.ua/'
+  };
+
+  const data = Buffer.from(JSON.stringify(params)).toString('base64');
+  const signature = crypto
+    .createHash('sha1')
+    .update(privateKey + data + privateKey)
+    .digest('base64');
+
+  res.status(200).json({ data, signature });
 }
