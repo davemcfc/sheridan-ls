@@ -1,3 +1,4 @@
+// Final cache bust to force Vercel overwrite - June 18
 import crypto from 'crypto';
 
 export default async function handler(req, res) {
