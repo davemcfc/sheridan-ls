@@ -82,8 +82,8 @@ const translations = {
         desc: 'Усі мовні послуги надаються виключно в цифровому форматі. Навчальні сесії проходять у режимі онлайн-відеозв’язку (Google Meet, Microsoft Teams, Telegram тощо), а готові файли перекладів доставляються надійними електронними каналами зв’язку (E-mail, месенджери за домовленістю).'
       },
       refund: {
-        title: '2. Правила повернення коштів та скасування',
-        desc: 'Клієнти мають право запросити повне повернення сплачених коштів за заняття або перенести його termін без втрати коштів, за умови, що повідомлення про це надійшло електронною поштою або телефоном щонайменше за 24 години до початку запланованої сесії.'
+        title: '2. Умови обміну й повернення',
+        desc: '1) Послуги викладання: клієнти можуть запросити повне повернення коштів або перенести заняття (обмін часу), попередивши нас щонайменше за 24 години. 2) Послуги перекладу: оскільки переклад є індивідуальним цифровим продуктом, після початку роботи або доставки готового тексту ці послуги не підлягають обміну й поверненню.'
       }
     },
     payment: {
@@ -98,7 +98,7 @@ const translations = {
         clientEmail: 'Електронна пошта для квитанції',
         clientPhone: 'Контактний телефон',
         submit: 'Оплатити через LiqPay',
-        disclaimer: 'Натискаючи кнопку, ви погоджуєтесь з правилами надання послуг та політикою повернення коштів.',
+        disclaimer: 'Натискаючи кнопку, ви погоджуєтесь з правилами надання послуг та умовами обміну й повернення.',
         errorHeader: 'Помилка ініціалізації',
         errorMessage: 'Помилка підключення до платіжного шлюзу. Будь ласка, перевірте з\'єднання та спробуйте ще раз або зверніться до підтримки.'
       },
@@ -190,8 +190,8 @@ const translations = {
         desc: 'All professional language services are delivered digitally. Language tuition is conducted via online video calls (Google Meet, Microsoft Teams, Telegram, etc.), and finalised translated assets are delivered through secure electronic networks (E-mail or preferred messaging systems).'
       },
       refund: {
-        title: '2. Refund & Cancellation Policy',
-        desc: 'Clients can request a full refund or reschedule lessons with no financial penalty, provided formal cancellation is received via email or phone at least 24 hours prior to the scheduled session.'
+        title: '2. Exchange and Return Policy',
+        desc: '1) Tuition Services: Clients may request a full refund or reschedule (exchange) a lesson by notifying us at least 24 hours in advance. 2) Translation Services: As translations are custom digital products, once work has commenced or the finalized text is delivered, these services are strictly non-refundable and cannot be exchanged.'
       }
     },
     payment: {
@@ -206,7 +206,7 @@ const translations = {
         clientEmail: 'Receipt Email Address',
         clientPhone: 'Contact Telephone',
         submit: 'Pay Securely via LiqPay',
-        disclaimer: 'By proceeding, you agree to our service terms, digital delivery, and 24-hour cancellation policies.',
+        disclaimer: 'By proceeding, you agree to our service terms, digital delivery, and exchange and return policies.',
         errorHeader: 'Initialization Error',
         errorMessage: 'Failed to connect to the payment gateway. Please check your network and try again.'
       },
@@ -517,7 +517,6 @@ export default function App() {
         </section>
       )}
 
-      {}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
         
         {/* ABOUT TAB VIEW */}
@@ -1054,7 +1053,6 @@ export default function App() {
 
       </main>
 
-      {}
       {/* FOOTER AREA */}
       <footer className="bg-slate-900 text-white pt-16 pb-8 border-t border-slate-850 mt-auto">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
