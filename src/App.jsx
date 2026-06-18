@@ -198,7 +198,6 @@ export default function App() {
   const [payEmail, setPayEmail] = useState(''); 
   const [payPhone, setPayPhone] = useState('+380'); 
   
-  // NEW: Store the exact error message from the backend
   const [paymentError, setPaymentError] = useState(''); 
   
   const t = translations[currentLang]; 
@@ -224,10 +223,9 @@ export default function App() {
   }; 
   const currentTotal = getCalculatedTotal();
 
-  // IMPLEMENTED CLAUDE'S FIX: Dynamic Error Handling
   const handlePaymentSubmit = async (e) => { 
     e.preventDefault(); 
-    setPaymentError(''); // Clear previous errors
+    setPaymentError(''); 
     
     try {
       const response = await fetch('/api/create-liqpay', {
@@ -242,7 +240,6 @@ export default function App() {
         }),
       });
 
-      // Claude's Fix: Explicitly parse non-200 responses to extract the server message
       if (!response.ok) {
         const errBody = await response.json().catch(() => ({}));
         const err = new Error('Server returned non-200');
@@ -274,8 +271,6 @@ export default function App() {
 
     } catch (error) {
       console.error('Payment gateway initialization failed:', error);
-      
-      // Claude's Fix: Try to get the real server error message
       let displayError = t.payment.form.errorMessage;
       if (error?.serverMessage) {
         displayError = error.serverMessage;
@@ -520,7 +515,7 @@ export default function App() {
               </div>
 
               <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 sm:p-10">
-                <div className="space-y-6">
+                <form onSubmit={handlePaymentSubmit} className="space-y-6">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t.payment.form.serviceType}</label>
                     <select value={payService} onChange={(e) => setPayService(e.target.value)} className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
@@ -553,13 +548,13 @@ export default function App() {
                     </div>
                   </div>
                   
-                  <button type="button" onClick={handlePaymentSubmit} className="w-full py-4 mt-4 bg-[#78B43E] hover:bg-[#689d36] text-white rounded-xl font-extrabold text-lg transition-all shadow-md flex justify-center items-center gap-2">
+                  <button type="submit" className="w-full py-4 mt-4 bg-[#78B43E] hover:bg-[#689d36] text-white rounded-xl font-extrabold text-lg transition-all shadow-md flex justify-center items-center gap-2">
                     <CreditCard className="w-6 h-6" /> {t.payment.form.submit} ({Number(payAmount).toLocaleString()} UAH)
                   </button>
                   
                   <p className="text-center text-xs text-slate-400 mt-4">{t.payment.form.disclaimer}</p>
 
-                  {/* ERROR DISPLAY BOX (Claude's Fix Location) */}
+                  {/* ERROR DISPLAY BOX */}
                   {paymentError && (
                     <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start text-red-800 animate-in fade-in duration-300">
                       <AlertTriangle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5 text-red-600" />
@@ -571,7 +566,7 @@ export default function App() {
                       </div>
                     </div>
                   )}
-                </div>
+                </form>
               </div>
             </div>
           )}
