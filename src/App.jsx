@@ -36,7 +36,7 @@ const translations = {
     about: {
       badge: 'Досвід та надійність',
       title: 'Понад 35 років відданої практики',
-      p1: 'Вітаю! Я професійний перекладач і викладач англійської мови. Протягом більш ніж трьох десятиліть я допомагаю студентам усього світу долати мовні бар\'єри, освоювати складну граматику, підвищувати розмовний рівень і створювати бездоганні переклади.',
+      p1: 'Вітаю! Я професійний перекладач і викладач англійської мови. Протягом більш ніж трьох десятиліть я допомагаю студентам усього світу долати мовні бар\'єри, освоювати складну граматику, підвищувати розмовний уровень і створювати бездоганні переклади.',
       p2: 'Якщо ви бажаєте досконало опанувати англійську мову або потребуєте ретельного, автентичного перекладу ваших документів чи текстів з української на англійську, я надаю надійні та якісні послуги, які повністю відповідають вашим академічним та професійним цілям.',
       stats: [
         { value: '35+', label: 'Років досвіду' },
@@ -79,11 +79,11 @@ const translations = {
       subtitle: 'Будь ласка, ознайомтеся з умовами доставки та скасування занять перед початком співпраці.',
       delivery: {
         title: '1. Політика доставки послуг',
-        desc: 'Усі мовні послуги надаються виключно в цифровому форматі. Навчальні сесії проходять у режимі онлайн-відеозв’язку <comment-tag id="1">(Google Meet, Microsoft Teams, Telegram тощо).</comment-tag id="1" text="Для покращення відповідності вашій цільовій аудиторії в Україні, замініть старий список платформ на більш актуальний та популярний набір: '(Google Meet, Microsoft Teams, Telegram)'." type="suggestion">, а готові файли перекладів доставляються надійними електронними каналами зв’язку (E-mail, месенджери за домовленістю).'
+        desc: 'Усі мовні послуги надаються виключно в цифровому форматі. Навчальні сесії проходять у режимі онлайн-відеозв’язку (Google Meet, Microsoft Teams, Telegram тощо), а готові файли перекладів доставляються надійними електронними каналами зв’язку (E-mail, месенджери за домовленістю).'
       },
       refund: {
         title: '2. Правила повернення коштів та скасування',
-        desc: 'Клієнти мають право запросити повне повернення сплачених коштів за заняття або перенести його термін без втрати коштів, за умови, що повідомлення про це надійшло електронною поштою або телефоном щонайменше за 24 години до початку запланованої сесії.'
+        desc: 'Клієнти мають право запросити повне повернення сплачених коштів за заняття або перенести його termін без втрати коштів, за умови, що повідомлення про це надійшло електронною поштою або телефоном щонайменше за 24 години до початку запланованої сесії.'
       }
     },
     payment: {
@@ -187,7 +187,7 @@ const translations = {
       subtitle: 'Please review our service delivery, cancellation, and refund parameters before commencing scheduling.',
       delivery: {
         title: '1. Service Delivery Policy',
-        desc: 'All professional language services are delivered digitally. Language tuition is conducted via online video calls <comment-tag id="2">(Google Meet, Microsoft Teams, Telegram, etc.).</comment-tag id="2" text="To align with your updated localized preferences, change this communication tools placeholder to: '(Google Meet, Microsoft Teams, Telegram)'." type="suggestion">, and finalised translated assets are delivered through secure electronic networks (E-mail or preferred messaging systems).'
+        desc: 'All professional language services are delivered digitally. Language tuition is conducted via online video calls (Google Meet, Microsoft Teams, Telegram, etc.), and finalised translated assets are delivered through secure electronic networks (E-mail or preferred messaging systems).'
       },
       refund: {
         title: '2. Refund & Cancellation Policy',
@@ -517,7 +517,7 @@ export default function App() {
         </section>
       )}
 
-      {/* MAIN CONTAINER */}
+      {}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
         
         {/* ABOUT TAB VIEW */}
@@ -1054,6 +1054,7 @@ export default function App() {
 
       </main>
 
+      {}
       {/* FOOTER AREA */}
       <footer className="bg-slate-900 text-white pt-16 pb-8 border-t border-slate-850 mt-auto">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
