@@ -313,7 +313,7 @@ export default function App() {
     
     try {
       // 1. Call secure API route to parse variables and sign them
-      const response = await fetch('/api/create-liqpay.cjs', {
+      const response = await fetch('/api/create-liqpay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
