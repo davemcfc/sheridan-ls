@@ -1,18 +1,17 @@
-// Force fresh cache compilation build - June 2026
-import crypto from 'crypto';
+const crypto = require('crypto');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // CORS & Method Guard
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    // 1. Safe Body Parser Guard (prevents destructuring crashes if body is missing)
+    // 1. Safe Body Parser Guard
     const body = req.body || {};
     const { amount, currency, description, clientPhone, clientEmail } = body;
 
-    // 2. Validate payment amount to prevent unhandled serialization crashes
+    // 2. Validate payment amount
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ error: 'Invalid or missing payment amount' });
@@ -22,7 +21,7 @@ export default async function handler(req, res) {
     const publicKey = process.env.LIQPAY_PUBLIC_KEY;
     const privateKey = process.env.LIQPAY_PRIVATE_KEY;
 
-    // Guard: If keys are missing, return a clean JSON error instead of crashing the process
+    // Guard: If keys are missing, return a clean JSON error
     if (!publicKey || !privateKey) {
       console.error('CRITICAL: LiqPay Public or Private keys are not set up in Vercel environment variables.');
       return res.status(500).json({
@@ -63,4 +62,4 @@ export default async function handler(req, res) {
     console.error('Unhandled runtime exception in backend serverless function:', error);
     return res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
-}
+};
