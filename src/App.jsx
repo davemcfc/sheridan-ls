@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   BookOpen, 
   FileText, 
@@ -12,7 +12,6 @@ import {
   Calendar, 
   CreditCard,
   Sparkles,
-  Edit2,
   Globe,
   AlertTriangle
 } from 'lucide-react';
@@ -36,7 +35,7 @@ const translations = {
     about: {
       badge: 'Досвід та надійність',
       title: 'Понад 35 років відданої практики',
-      p1: 'Вітаю! Я професійний перекладач і викладач англійської мови. Протягом більш ніж трьох десятиліть я допомагаю студентам усього світу долати мовні бар\'єри, освоювати складну граматику, підвищувати розмовний уровень і створювати бездоганні переклади.',
+      p1: 'Вітаю! Я професійний перекладач і викладач англійської мови. Протягом більш ніж трьох десятиліть я допомагаю студентам усього світу долати мовні бар\'єри, освоювати складну граматику, підвищувати розмовний рівень і створювати бездоганні переклади.',
       p2: 'Якщо ви бажаєте досконало опанувати англійську мову або потребуєте ретельного, автентичного перекладу ваших документів чи текстів з української на англійську, я надаю надійні та якісні послуги, які повністю відповідають вашим академічним та професійним цілям.',
       stats: [
         { value: '35+', label: 'Років досвіду' },
@@ -98,7 +97,7 @@ const translations = {
         clientEmail: 'Електронна пошта для квитанції',
         clientPhone: 'Контактний телефон',
         submit: 'Оплатити через LiqPay',
-        disclaimer: 'Натискаючи кнопку, ви погоджуєтесь з правилами надання послуг та умовами обміну й повернення.',
+        disclaimer: 'Натискаючи кнопку, ви погоджуєтесь з правилами надання послуг та політикою повернення коштів.',
         errorHeader: 'Помилка ініціалізації',
         errorMessage: 'Помилка підключення до платіжного шлюзу. Будь ласка, перевірте з\'єднання та спробуйте ще раз або зверніться до підтримки.'
       },
@@ -119,8 +118,6 @@ const translations = {
     footer: {
       desc: 'Професійні, надійні та перевірені часом рішення в сфері вивчення англійської мови та високоточного перекладу.',
       contacts: 'Контактна інформація',
-      addressEdit: 'Редагувати адресу реєстрації',
-      addressPlaceholder: 'Введіть вашу адресу реєстрації тут...',
       addressDefault: 'вул. Кринична, 90, м. Хмельницький, Україна 29021',
       legal: 'ШЕРІДАН Д.А. ФОП',
       rights: 'Усі права захищено.'
@@ -206,7 +203,7 @@ const translations = {
         clientEmail: 'Receipt Email Address',
         clientPhone: 'Contact Telephone',
         submit: 'Pay Securely via LiqPay',
-        disclaimer: 'By proceeding, you agree to our service terms, digital delivery, and exchange and return policies.',
+        disclaimer: 'By proceeding, you agree to our service terms, digital delivery, and 24-hour cancellation policies.',
         errorHeader: 'Initialization Error',
         errorMessage: 'Failed to connect to the payment gateway. Please check your network and try again.'
       },
@@ -227,8 +224,6 @@ const translations = {
     footer: {
       desc: 'Professional, reliable, and highly refined English language instruction and translations backed by 35 years of excellence.',
       contacts: 'Contact Details',
-      addressEdit: 'Configure registration address',
-      addressPlaceholder: 'Input your company registration address...',
       addressDefault: '90 Krynychna St., Khmelnytskyi, Ukraine 29021',
       legal: 'ШЕРІДАН Д.А. ФОП',
       rights: 'All rights reserved.'
@@ -239,10 +234,6 @@ const translations = {
 export default function App() {
   const [currentLang, setCurrentLang] = useState('uk'); // Ukrainian is default to comply with Article 30
   const [activeTab, setActiveTab] = useState('about');
-  
-  // Address edit configurations for banking validation
-  const [regAddress, setRegAddress] = useState('');
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
 
   // Calculator logic state
   const [calcType, setCalcType] = useState('tuition');
@@ -264,11 +255,6 @@ export default function App() {
   const [paymentError, setPaymentError] = useState('');
 
   const t = translations[currentLang];
-
-  // Set default localized address on load
-  useEffect(() => {
-    setRegAddress(translations[currentLang].footer.addressDefault);
-  }, [currentLang]);
 
   const changeTab = (tabId) => {
     setActiveTab(tabId);
@@ -517,6 +503,7 @@ export default function App() {
         </section>
       )}
 
+      {/* MAIN CONTAINER */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
         
         {/* ABOUT TAB VIEW */}
@@ -1094,42 +1081,10 @@ export default function App() {
                     <div className="flex-grow">
                       <span className="text-slate-300 text-sm leading-relaxed">
                         {currentLang === 'uk' ? 'Адреса: ' : 'Address: '}
-                        {regAddress || <span className="text-rose-400 italic">No Address Configured</span>}
+                        {t.footer.addressDefault}
                       </span>
                     </div>
                     <MapPin className="w-5 h-5 text-blue-500 flex-shrink-0 mt-1" />
-                  </div>
-
-                  <div className="flex justify-end pr-8">
-                    {isEditingAddress ? (
-                      <div className="space-y-2 max-w-md bg-slate-800 p-3 rounded-lg border border-slate-700 text-left">
-                        <textarea
-                          value={regAddress}
-                          onChange={(e) => setRegAddress(e.target.value)}
-                          placeholder={t.footer.addressPlaceholder}
-                          className="w-full bg-slate-950 border border-slate-700 rounded-md p-2 text-xs text-slate-200 focus:outline-none"
-                          rows="2"
-                        />
-                        <div className="flex justify-end">
-                            <button 
-                              type="button"
-                              onClick={() => setIsEditingAddress(false)}
-                              className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] px-3 py-1 rounded-md transition-all uppercase tracking-wider"
-                            >
-                              {currentLang === 'uk' ? 'Зберегти' : 'Save Address'}
-                            </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button 
-                        type="button"
-                        onClick={() => setIsEditingAddress(true)}
-                        className="text-blue-400 hover:text-blue-300 text-xs font-bold inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-750 px-2.5 py-1 rounded border border-slate-700 transition-all"
-                      >
-                        {t.footer.addressEdit}
-                        <Edit2 className="w-3 h-3" />
-                      </button>
-                    )}
                   </div>
                 </li>
 
