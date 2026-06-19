@@ -22,7 +22,7 @@ const translations = {
     nav: {
       about: 'Про мене',
       services: 'Послуги та тарифи',
-      policies: 'Правила',
+      policies: 'Обмін й повернення',
       pay: 'Платіжний портал'
     },
     hero: {
@@ -75,14 +75,14 @@ const translations = {
     },
     policies: {
       badge: 'Регламент та стандарти',
-      title: 'Правила надання послуг',
-      subtitle: 'Будь ласка, ознайомтеся з умовами доставки та скасування занять перед початком співпраці.',
+      title: 'Умови обміну й повернення',
+      subtitle: 'Офіційні правила щодо доставки, обміну та повернення коштів за послуги.',
       delivery: {
-        title: '1. Політика доставки послуг',
+        title: '1. Формат та доставка послуг',
         desc: 'Усі мовні послуги надаються виключно в цифровому форматі. Навчальні сесії проходять у режимі онлайн-відеозв’язку (Google Meet, Microsoft Teams, Telegram тощо), а готові файли перекладів доставляються надійними електронними каналами зв’язку (E-mail, месенджери за домовленістю).'
       },
       refund: {
-        title: '2. Умови обміну й повернення',
+        title: '2. Детальні умови обміну й повернення',
         desc: '1) Послуги викладання: клієнти можуть запросити повне повернення коштів або перенести заняття (обмін часу), попередивши нас щонайменше за 24 години. 2) Послуги перекладу: оскільки переклад є індивідуальним цифровим продуктом, після початку роботи або доставки готового тексту ці послуги не підлягають обміну й поверненню.'
       }
     },
@@ -130,7 +130,7 @@ const translations = {
     nav: {
       about: 'About Me',
       services: 'Services & Rates',
-      policies: 'Policies',
+      policies: 'Returns & Exchanges',
       pay: 'Payment Portal'
     },
     hero: {
@@ -183,14 +183,14 @@ const translations = {
     },
     policies: {
       badge: 'Standards & Protocols',
-      title: 'Service Policies',
-      subtitle: 'Please review our service delivery, cancellation, and refund parameters before commencing scheduling.',
+      title: 'Exchange and Return Policy',
+      subtitle: 'Official regulations regarding service delivery, cancellations, and refunds.',
       delivery: {
-        title: '1. Service Delivery Policy',
+        title: '1. Service Delivery Format',
         desc: 'All professional language services are delivered digitally. Language tuition is conducted via online video calls (Google Meet, Microsoft Teams, Telegram, etc.), and finalised translated assets are delivered through secure electronic networks (E-mail or preferred messaging systems).'
       },
       refund: {
-        title: '2. Exchange and Return Policy',
+        title: '2. Detailed Return & Exchange Terms',
         desc: '1) Tuition Services: Clients may request a full refund or reschedule (exchange) a lesson by notifying us at least 24 hours in advance. 2) Translation Services: As translations are custom digital products, once work has commenced or the finalized text is delivered, these services are strictly non-refundable and cannot be exchanged.'
       }
     },
